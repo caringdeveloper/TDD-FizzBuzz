@@ -1,23 +1,18 @@
+﻿using FizzBuzz;
 using FizzBuzz.Interfaces;
 using FizzBuzz.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
-var builder = WebApplication.CreateBuilder(args);
+// Dependency Injection Host
+using var host = Host.CreateDefaultBuilder(args)
+    .ConfigureServices((_, services) =>
+    {
+        services.AddTransient<IFizzBuzzHost, FizzBuzzHost>();
+        services.AddTransient<IFizzBuzzService, FizzBuzzService>();
+    })
+    .Build();
 
-builder.Services.AddScoped<IFizzBuzzer, FizzBuzzer>();
-
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-var app = builder.Build();
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
-app.UseAuthorization();
-app.MapControllers();
-app.Run();
+// Kickoff
+host.Services.GetService<IFizzBuzzHost>()?.Run(args);
+await host.RunAsync();
